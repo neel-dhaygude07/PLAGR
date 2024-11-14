@@ -1,0 +1,44 @@
+from PIL import Image
+import numpy as np
+from skimage.metrics import structural_similarity as ssim
+
+def is_black_and_white(image):
+    img_rgb = image.convert("RGB")
+    img_array = np.array(img_rgb)
+
+    red, green, blue = img_array[:, :, 0], img_array[:, :, 1], img_array[:, :, 2]
+
+    threshold = 10
+    return np.all(np.abs(red - green) < threshold) and np.all(np.abs(red - blue) < threshold) and np.all(np.abs(green - blue) < threshold)
+
+def compare_images(image_path_1, image_path_2):
+    try:
+        img1 = Image.open(image_path_1)
+        img2 = Image.open(image_path_2)
+    except Exception as e:
+        print(f"Error loading images: {e}")
+        return
+
+    if not is_black_and_white(img2):
+        print("The second image is not black and white.")
+        return
+
+    img1_gray = img1.convert("L")
+    img2_gray = img2.convert("L")
+
+    img1_gray = img1_gray.resize((32, 32))
+    img2_gray = img2_gray.resize((32, 32))
+
+    img1_array = np.array(img1_gray)
+    img2_array = np.array(img2_gray)
+
+    ssim_index = ssim(img1_array, img2_array)  
+    if ssim_index > 0.95:  
+        print("The second image is a black-and-white version of the first image.")
+    else:
+        print("The images are different.")
+
+image_path_1 = input("Enter the file path of the main image: ")
+image_path_2 = input("Enter the file path of the other image: ")
+
+compare_images(image_path_1, image_path_2)
