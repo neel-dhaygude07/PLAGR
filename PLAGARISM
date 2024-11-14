@@ -1,0 +1,27 @@
+import os
+import numpy as np
+from PIL import Image
+
+def preprocess_image(image_path):
+    img = Image.open(image_path).convert("RGB").resize((32, 32))
+    img_array = np.array(img) / 255.0
+    return img_array
+
+def check_image_in_folder(input_image_path, folder_path):
+    input_image_array = preprocess_image(input_image_path)
+
+    for image_file in os.listdir(folder_path):
+        image_path = os.path.join(folder_path, image_file)
+        if image_file.lower().endswith(('.png', '.jpg', '.jpeg')):
+            folder_image_array = preprocess_image(image_path)
+            if np.allclose(input_image_array, folder_image_array, atol=1e-3):
+                print(f"The image is similar to {image_file} in the folder.")
+                return True
+
+    print("No similar image found in the folder.")
+    return False
+
+input_image_path = input("Enter the file path of the image to check: ")
+folder_path = input("Enter the folder path to search in: ")
+
+check_image_in_folder(input_image_path, folder_path)
